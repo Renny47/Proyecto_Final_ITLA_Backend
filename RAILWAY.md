@@ -18,27 +18,43 @@ JWT_EXPIRATION_HOURS=60
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# CORS Configuration
+# CORS Configuration (Optional)
 ALLOWED_ORIGINS=https://your-frontend-domain.com,https://another-domain.com
 
 # ASP.NET Core Configuration
 ASPNETCORE_ENVIRONMENT=Production
-ASPNETCORE_URLS=http://0.0.0.0:$PORT
+
+# Railway automatically sets PORT variable - don't set manually
 ```
 
 ## Deployment Steps
 
-1. Connect your GitHub repository to Railway
-2. Set the environment variables above in Railway dashboard
-3. Railway will automatically detect .NET and build/deploy
-4. Your API will be available at: `https://your-project-name.up.railway.app`
+1. **Connect Repository**: Link your GitHub repository to Railway
+2. **Set Environment Variables**: Copy the variables above to Railway dashboard
+3. **Deploy**: Railway will use Dockerfile to build and deploy automatically
+4. **Access**: Your API will be available at: `https://your-project-name.up.railway.app`
+
+## Important Notes
+
+- ✅ **Automatic Migrations**: Database migrations run automatically on startup
+- ✅ **Docker Build**: Uses multi-stage Docker build for optimization
+- ✅ **Port Configuration**: Railway PORT environment variable is handled automatically
+- ✅ **Health Checks**: Available at `/api` endpoint
+- ✅ **HTTPS**: Railway provides automatic HTTPS
 
 ## Endpoints
 
 - **Health Check**: `/api`
 - **Swagger UI**: `/swagger` (available in production)
-- **Auth Endpoints**: `/api/auth/*`
+- **Auth Login**: `/api/auth/login`
+- **Auth Register**: `/api/auth/register`
+- **Auth Profile**: `/api/auth/profile`
+- **Google Auth**: `/api/GoogleAuth/*`
 
-## Database Migration
+## Troubleshooting
 
-Migrations are applied automatically during startup in production.
+If deployment fails:
+1. Check Railway logs for specific errors
+2. Verify all environment variables are set correctly
+3. Ensure database connection string is valid
+4. Check that JWT_SECRET_KEY is at least 32 characters

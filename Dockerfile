@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
@@ -30,14 +30,11 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Install EntityFramework tool for migrations
-USER root
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="$PATH:/root/.dotnet/tools"
+# Railway uses PORT environment variable
+ENV ASPNETCORE_URLS=http://0.0.0.0:$PORT
+ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Create startup script
-RUN echo '#!/bin/bash\nset -e\n\n# Run migrations\ndotnet ef database update --no-build\n\n# Start the application\ndotnet SIGID.API.dll' > /app/start.sh
-RUN chmod +x /app/start.sh
+# Don't run as root for security
+USER $APP_UID
 
-USER app
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["dotnet", "SIGID.API.dll"]
