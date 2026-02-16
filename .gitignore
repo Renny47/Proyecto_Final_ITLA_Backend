@@ -68,3 +68,19 @@ logs/
 *.tmp
 *.temp
 *.cache
+
+# Local configuration files with sensitive data
+appsettings.Local.json
+appsettings.*.local.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+
+# Secrets and environment files
+.env
+.env.local
+.env.*.local
+secrets.json
+user-secrets.json
+
+# Railway specific
+.railway/

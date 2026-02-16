@@ -19,6 +19,7 @@ builder.Services.AddControllers();
 // Configure Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ??
+        Environment.GetEnvironmentVariable("DATABASE_URL") ??
         "Server=.\\SQLEXPRESS;Database=SIGID_DB;Trusted_Connection=true;TrustServerCertificate=true;",
         b => b.MigrationsAssembly("SIGID.API")));
 
@@ -37,10 +38,10 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 // Configure JWT
 var jwtSettings = new JwtSettings
 {
-    SecretKey = "mi-clave-secreta-super-ultra-mega-segura-para-jwt-token-que-debe-tener-al-menos-32-caracteres",
-    Issuer = "SIGID-API",
-    Audience = "SIGID-Client",
-    TokenExpirationHours = 1
+    SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? builder.Configuration["JwtSettings:SecretKey"] ?? "mi-clave-secreta-super-ultra-mega-segura-para-jwt-token-que-debe-tener-al-menos-32-caracteres",
+    Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["JwtSettings:Issuer"] ?? "SIGID-API",
+    Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["JwtSettings:Audience"] ?? "SIGID-Client",
+    TokenExpirationHours = int.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRATION_HOURS") ?? builder.Configuration["JwtSettings:ExpirationInMinutes"] ?? "60") / 60
 };
 builder.Services.Configure<JwtSettings>(options =>
 {
@@ -137,9 +138,36 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
+    
+    options.AddPolicy("Production", policy =>
+    {
+        var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',') ?? new[] { "https://*.railway.app", "https://*.up.railway.app" };
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 var app = builder.Build();
+
+// Apply migrations in production
+if (!app.Environment.IsDevelopment())
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        try
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while migrating the database");
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -153,6 +181,17 @@ if (app.Environment.IsDevelopment())
         c.DefaultModelsExpandDepth(-1);
     });
     app.UseCors("Development");
+}
+else
+{
+    // Production: también habilitar Swagger para Railway
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "SIGID Backend API v1");
+        c.RoutePrefix = "swagger"; // Swagger en /swagger en producción
+    });
+    app.UseCors("Production");
 }
 
 app.UseHttpsRedirection();
