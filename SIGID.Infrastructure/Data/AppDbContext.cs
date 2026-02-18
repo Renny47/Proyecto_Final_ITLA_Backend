@@ -10,6 +10,8 @@ public class AppDbContext : IdentityDbContext<User>
     {
     }
 
+    public DbSet<Booking> Bookings { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -24,7 +26,16 @@ public class AppDbContext : IdentityDbContext<User>
             entity.HasIndex(e => e.UserName).IsUnique();
         });
 
+        builder.Entity<Booking>(entity =>
+        {
+            entity.Property(e => e.Id).IsRequired();
+            entity.Property(e => e.BookingState).IsRequired();
+            entity.Property(e => e.DateAndTime).IsRequired();
+            entity.Property(e => e.BookedByClientName).HasMaxLength(100);
+        });
+
         // Configurar nombres de tablas si es necesario
         builder.Entity<User>().ToTable("Users");
+        builder.Entity<Booking>().ToTable("Bookings");
     }
 }
