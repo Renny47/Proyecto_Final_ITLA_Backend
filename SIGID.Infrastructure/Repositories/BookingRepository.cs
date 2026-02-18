@@ -15,6 +15,19 @@ namespace SIGID.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<bool> BookAsync(Guid bookingId, string clientName)
+        {
+            var entity = await GetBookingByIdAsync(bookingId)
+                 ?? throw new Exception($"booking with id: '{bookingId}'not found");
+
+            entity.BookingState = BookingState.BOOKED;
+            entity.BookedByClientName = clientName;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         public async Task<Booking> CreateBookingAsync(Booking booking)
         {
             await _context.AddAsync(booking);
@@ -54,12 +67,15 @@ namespace SIGID.Infrastructure.Repositories
             return await _context.Bookings.FindAsync(bookingId);
         }
 
-        public async Task<Booking> UpdateBookingByIdAsync(Booking booking)
+        public async Task<Booking> UpdateBookingByIdAsync(Booking booking, Guid Id)
         {
-            var entity = await GetBookingByIdAsync(booking.Id) 
-                ?? throw new Exception($"booking with id: '{booking.Id}'not found");
+            var entity = await GetBookingByIdAsync(Id)
+                ?? throw new Exception($"booking with id: '{Id}'not found");
 
-            _context.Update(entity);
+            entity.DateAndTime = booking.DateAndTime;
+            entity.BookingState = booking.BookingState;
+            entity.BookedByClientName = booking.BookedByClientName;
+
             await _context.SaveChangesAsync();
 
             return entity;
