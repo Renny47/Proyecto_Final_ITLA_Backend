@@ -4,8 +4,9 @@ using SIGID.Application.Interfaces;
 
 namespace SIGID.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
+    [Produces("application/json")]
     public class ReceptionController : ControllerBase
     {
         private readonly IBookingService _bookingService;
