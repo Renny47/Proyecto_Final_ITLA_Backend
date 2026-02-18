@@ -53,7 +53,7 @@ namespace SIGID.Application.Services
 
         public async Task<IEnumerable<BookingDto>> GetAllBookingsAsync()
         {
-            var entities = await _repo.GetAllBookingsAsync();
+            var entities = await _repo.GetAllBookingsAsync()!;
 
             var dtos = entities.Select(b => new BookingDto
             {
@@ -66,17 +66,10 @@ namespace SIGID.Application.Services
             return dtos;
         }
 
-        public async Task<IEnumerable<BookingDto>>? GetAvailableBookingsAsync()
+        public async Task<IEnumerable<BookingDto>> GetAvailableBookingsAsync()
         {
-            var entities = await _repo.GetAllBookingsAsync();
-
-            var dtos = entities.Select(b => new BookingDto
-            {
-                Id = b.Id,
-                DateAndTime = b.DateAndTime,
-                BookingState = b.BookingState,
-                BookedByClientName = b.BookedByClientName
-            }).Where(b => b.BookingState == BookingState.NOT_BOOKED);
+            var entities = await _repo.GetAvailableBookingsAsync()!;
+            var dtos = entities.Select(b => MapToDto(b));
 
             return dtos;
         }

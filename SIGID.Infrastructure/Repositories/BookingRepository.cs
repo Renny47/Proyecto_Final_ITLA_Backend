@@ -37,7 +37,7 @@ namespace SIGID.Infrastructure.Repositories
 
         public async Task<bool> DeleteBookingByIdAsync(Guid bookingId)
         {
-            var entity = GetBookingByIdAsync(bookingId);
+            var entity = await GetBookingByIdAsync(bookingId);
 
             if (entity == null) return false;
 

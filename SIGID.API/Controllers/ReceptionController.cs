@@ -18,13 +18,13 @@ namespace SIGID.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllBookings()
         {
-            return Ok(_bookingService.GetAllBookingsAsync());
+            return Ok(await _bookingService.GetAllBookingsAsync()!);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetBookingById(Guid bookingId)
         {
-            return Ok(_bookingService.GetBookingByIdAsync(bookingId));
+            return Ok(await _bookingService.GetBookingByIdAsync(bookingId));
         }
     }
 }
