@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 using SIGID.Application.Extensions;
+using SIGID.Application.Interfaces;
+using SIGID.Application.Services;
+using SIGID.Domain.Entities;
 using SIGID.Infrastructure.Data;
 using SIGID.Infrastructure.Repositories;
 using SIGID.Shared.Configuration;
-using SIGID.Domain.Entities;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,9 +78,11 @@ builder.Services.AddAuthentication(options =>
 
 // Register application services
 builder.Services.AddApplicationServices();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 // Infrastructure services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBookingRepositoryAsync, BookingRepository>();
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

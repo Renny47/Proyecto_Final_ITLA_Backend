@@ -22,13 +22,13 @@ namespace SIGID.API.Controllers
             return Ok(await _bookingService.CreateBookingAsync(bookingDto));
         }
 
-        [HttpPost]
+        [HttpPut("{bookingId}")]
         public async Task<IActionResult> UpdateBooking(BookingDto bookingDto)
         {
             return Ok(await _bookingService.UpdateBookingByIdAsync(bookingDto, bookingDto.Id));
         }
 
-        [HttpPost]
+        [HttpDelete]
         public async Task<IActionResult> DeleteBooking(Guid bookingId)
         {
             return Ok(await _bookingService.DeleteBookingByIdAsync(bookingId));
@@ -40,7 +40,7 @@ namespace SIGID.API.Controllers
             return Ok(await _bookingService.GetAllBookingsAsync()!);
         }
 
-        [HttpGet]
+        [HttpGet("{bookingId}")]
         public async Task<IActionResult> GetBookingById(Guid bookingId)
         {
             return Ok(await _bookingService.GetBookingByIdAsync(bookingId));

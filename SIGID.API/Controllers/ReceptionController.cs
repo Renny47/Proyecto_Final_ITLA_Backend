@@ -22,7 +22,7 @@ namespace SIGID.API.Controllers
             return Ok(await _bookingService.GetAllBookingsAsync()!);
         }
 
-        [HttpGet]
+        [HttpGet("{bookingId}")]
         public async Task<IActionResult> GetBookingById(Guid bookingId)
         {
             return Ok(await _bookingService.GetBookingByIdAsync(bookingId));
