@@ -7,6 +7,7 @@ using SIGID.Application.Extensions;
 using SIGID.Application.Interfaces;
 using SIGID.Application.Services;
 using SIGID.Domain.Entities;
+using SIGID.Domain.Interfaces;
 using SIGID.Infrastructure.Data;
 using SIGID.Infrastructure.Repositories;
 using SIGID.Shared.Configuration;

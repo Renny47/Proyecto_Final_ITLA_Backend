@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SIGID.Application.Interfaces;
+using SIGID.Domain.Interfaces;
 using SIGID.Domain.Entities;
 using SIGID.Domain.Enums;
 using SIGID.Infrastructure.Data;

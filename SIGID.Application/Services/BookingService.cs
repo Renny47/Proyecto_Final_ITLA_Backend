@@ -2,6 +2,7 @@
 using SIGID.Application.Interfaces;
 using SIGID.Domain.Entities;
 using SIGID.Domain.Enums;
+using SIGID.Domain.Interfaces;
 
 namespace SIGID.Application.Services
 {

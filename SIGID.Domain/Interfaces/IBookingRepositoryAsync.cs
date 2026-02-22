@@ -1,6 +1,6 @@
-﻿using SIGID.Domain.Entities;
+using SIGID.Domain.Entities;
 
-namespace SIGID.Application.Interfaces
+namespace SIGID.Domain.Interfaces
 {
     public interface IBookingRepositoryAsync
     {
