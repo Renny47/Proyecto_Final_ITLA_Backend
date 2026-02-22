@@ -80,20 +80,20 @@ builder.Services.AddAuthentication(options =>
 // Register application services
 builder.Services.AddApplicationServices();
 
-// SmartResto Application Services (temporalmente comentados para migración)
-//builder.Services.AddScoped<IReservaService, ReservaService>();
-//builder.Services.AddScoped<IInventarioService, InventarioService>();
-//builder.Services.AddScoped<IPrediccionDemandaService, PrediccionDemandaService>();
-//builder.Services.AddScoped<IAdministradorService, AdministradorService>();
+// SmartResto Application Services
+builder.Services.AddScoped<IReservaService, ReservaService>();
+builder.Services.AddScoped<IInventarioService, InventarioService>();
+builder.Services.AddScoped<IPrediccionDemandaService, PrediccionDemandaService>();
+builder.Services.AddScoped<IAdministradorService, AdministradorService>();
 
 // Infrastructure services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-// SmartResto Infrastructure Repositories (temporalmente comentados para migración)
-//builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
-//builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
-//builder.Services.AddScoped<IPrediccionDemandaRepository, PrediccionDemandaRepository>();
-//builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
+// SmartResto Infrastructure Repositories
+builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
+builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
+builder.Services.AddScoped<IPrediccionDemandaRepository, PrediccionDemandaRepository>();
+builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
 
 // AutoMapper configuration (base)
 builder.Services.AddAutoMapper(typeof(SIGID.Application.Mappings.SmartRestoMappingProfile));
