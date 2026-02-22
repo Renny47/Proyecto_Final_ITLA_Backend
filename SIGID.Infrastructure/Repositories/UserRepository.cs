@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using SIGID.Domain.Entities;
+using SIGID.Domain.Enums;
 using SIGID.Domain.Interfaces;
 using SIGID.Infrastructure.Data;
 
 namespace SIGID.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository : IUserRepository, IUsuarioRepository
 {
     private readonly AppDbContext _context;
 
@@ -69,5 +70,25 @@ public class UserRepository : IUserRepository
     public async Task<bool> ExistsAsync(string id)
     {
         return await _context.Users.AnyAsync(u => u.Id == id && u.IsActive);
+    }
+
+    public async Task<IEnumerable<Usuario>> GetByTipoAsync(TipoUsuario tipo)
+    {
+        return await _context.Users
+            .Where(u => u.IsActive && u.TipoUsuario == tipo)
+            .OrderBy(u => u.UserName)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Usuario>> GetClientesConReservasAsync()
+    {
+        var usuariosConReservas = await _context.Reservas
+            .Select(r => r.UsuarioId)
+            .Distinct()
+            .ToListAsync();
+        return await _context.Users
+            .Where(u => u.IsActive && usuariosConReservas.Contains(u.Id))
+            .OrderBy(u => u.UserName)
+            .ToListAsync();
     }
 }

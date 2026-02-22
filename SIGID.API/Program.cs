@@ -13,6 +13,7 @@ using SIGID.Infrastructure.Repositories;
 using SIGID.Shared.Configuration;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,11 +25,23 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.Services.AddControllers();
 
 // Configure Entity Framework
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
+                       builder.Configuration.GetConnectionString("DefaultConnection");
+
+// If using Railway PostgreSQL, convert the URL format
+if (connectionString?.StartsWith("postgres://") == true)
+{
+    var uri = new Uri(connectionString);
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.Trim('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
+// Default for development if no proper connection string
+else if (string.IsNullOrEmpty(connectionString) || connectionString.Contains("PASSWORD_PLACEHOLDER"))
+{
+    connectionString = "Server=.\\SQLEXPRESS;Database=SIGID_DB;Trusted_Connection=true;TrustServerCertificate=true;";
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ??
-        Environment.GetEnvironmentVariable("DATABASE_URL") ??
-        "Server=.\\SQLEXPRESS;Database=SIGID_DB;Trusted_Connection=true;TrustServerCertificate=true;",
-        b => b.MigrationsAssembly("SIGID.API")));
+    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("SIGID.API")));
 
 // Configure Identity
 builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
@@ -88,12 +101,14 @@ builder.Services.AddScoped<IAdministradorService, AdministradorService>();
 
 // Infrastructure services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UserRepository>();
 
 // SmartResto Infrastructure Repositories
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
 builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
 builder.Services.AddScoped<IPrediccionDemandaRepository, PrediccionDemandaRepository>();
 builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
+builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
 
 // AutoMapper configuration (base)
 builder.Services.AddAutoMapper(typeof(SIGID.Application.Mappings.SmartRestoMappingProfile));
@@ -173,7 +188,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply migrations ALWAYS (both Development and Production)
+// Apply migrations ALWAYS (both Development and Production) with timeout
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -181,18 +196,38 @@ using (var scope = app.Services.CreateScope())
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
-        logger.LogInformation("🔧 Applying database migrations...");
+        logger.LogInformation("🔧 Attempting database migrations...");
         logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
-        logger.LogInformation($"Connection String: {builder.Configuration.GetConnectionString("DefaultConnection")?.Substring(0, 50)}...");
         
-        await context.Database.MigrateAsync();
-        logger.LogInformation("✅ Database migrations applied successfully!");
+        // Use a timeout for migration to prevent Railway healthcheck timeout
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        
+        // Test connection first
+        logger.LogInformation("🔍 Testing database connection...");
+        var canConnect = await context.Database.CanConnectAsync(cancellationTokenSource.Token);
+        if (canConnect)
+        {
+            logger.LogInformation("✅ Database connection successful");
+            
+            // Apply migrations
+            await context.Database.MigrateAsync(cancellationTokenSource.Token);
+            logger.LogInformation("✅ Database migrations applied successfully!");
+        }
+        else
+        {
+            logger.LogWarning("⚠️ Cannot connect to database - skipping migrations");
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning("⏱️ Database migration timed out - app will continue starting");
     }
     catch (Exception ex)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "❌ Error occurred while migrating the database");
-        // Don't throw - let app start anyway
+        logger.LogWarning(ex, "⚠️ Database migration failed - app will continue starting:");
+        logger.LogWarning($"Migration error: {ex.Message}");
     }
 }
 
@@ -230,8 +265,47 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Healthcheck mínimo (sin BD ni auth) para Railway
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+// Healthcheck mínimo (sin BD ni auth) para Railway - más robusto y rápido
+app.MapGet("/health", () => 
+{
+    return Results.Ok(new 
+    { 
+        status = "healthy", 
+        timestamp = DateTime.UtcNow,
+        service = "SIGID-API",
+        version = "1.0.0"
+    });
+});
+
+// Database health check (separate endpoint for detailed checks)
+app.MapGet("/health/database", async (AppDbContext context, ILogger<Program> logger) =>
+{
+    try
+    {
+        // Simple check to see if database is accessible
+        var result = await context.Database.ExecuteSqlRawAsync("SELECT 1");
+        return Results.Ok(new 
+        { 
+            status = "healthy", 
+            database = "connected",
+            timestamp = DateTime.UtcNow
+        });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database health check failed");
+        return Results.Problem(new 
+        { 
+            status = "unhealthy", 
+            database = "disconnected",
+            error = ex.Message,
+            timestamp = DateTime.UtcNow
+        }.ToString() ?? "Database connection failed");
+    }
+});
+
+// Basic ping endpoint for load balancers
+app.MapGet("/ping", () => "pong");
 
 // Welcome endpoint
 app.MapGet("/api", () => new
