@@ -19,9 +19,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# Script de arranque: usa PORT de Railway o 8080 por defecto
-COPY --from=build-env /app/SIGID.API/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+# Script generado en imagen (evita CRLF de Windows); usa PORT de Railway o 8080
+RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
+    echo 'export ASPNETCORE_URLS="http://0.0.0.0:${PORT:-8080}"' >> /app/entrypoint.sh && \
+    echo 'exec dotnet SIGID.API.dll' >> /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 ENTRYPOINT ["/app/entrypoint.sh"]
