@@ -10,7 +10,7 @@ namespace SIGID.Application.Security;
 
 public interface IJwtGenerator
 {
-    string GenerateToken(User user);
+    string GenerateToken(Usuario user);
     ClaimsPrincipal? ValidateToken(string token);
 }
 
@@ -23,7 +23,7 @@ public class JwtGenerator : IJwtGenerator
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(Usuario user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);

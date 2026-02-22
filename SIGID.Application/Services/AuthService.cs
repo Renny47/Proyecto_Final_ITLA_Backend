@@ -9,11 +9,11 @@ namespace SIGID.Application.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<Usuario> _userManager;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
-        UserManager<User> userManager,
+        UserManager<Usuario> userManager,
         ILogger<AuthService> logger)
     {
         _userManager = userManager;
@@ -90,7 +90,7 @@ public class AuthService : IAuthService
                 };
             }
 
-            var user = new User
+            var user = new Usuario
             {
                 UserName = registerRequest.UserName,
                 Email = registerRequest.Email,
@@ -166,7 +166,7 @@ public class AuthService : IAuthService
         return !string.IsNullOrEmpty(token);
     }
 
-    private static UserDto MapToUserDto(User user)
+    private static UserDto MapToUserDto(Usuario user)
     {
         return new UserDto
         {

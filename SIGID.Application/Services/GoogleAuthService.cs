@@ -12,13 +12,13 @@ namespace SIGID.Application.Services;
 
 public class GoogleAuthService : IGoogleAuthService
 {
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<Usuario> _userManager;
     private readonly IConfiguration _configuration;
     private readonly IJwtGenerator _jwtGenerator;
     private readonly ILogger<GoogleAuthService> _logger;
 
     public GoogleAuthService(
-        UserManager<User> userManager,
+        UserManager<Usuario> userManager,
         IConfiguration configuration,
         IJwtGenerator jwtGenerator,
         ILogger<GoogleAuthService> logger)
@@ -75,7 +75,7 @@ public class GoogleAuthService : IGoogleAuthService
             if (user == null)
             {
                 // Crear nuevo usuario
-                user = new User
+                user = new Usuario
                 {
                     UserName = payload.Email,
                     Email = payload.Email,

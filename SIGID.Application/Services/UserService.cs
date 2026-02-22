@@ -8,10 +8,10 @@ namespace SIGID.Application.Services;
 
 public class UserService : IUserService
 {
-    private readonly UserManager<User> _userManager;
+    private readonly UserManager<Usuario> _userManager;
     private readonly ILogger<UserService> _logger;
 
-    public UserService(UserManager<User> userManager, ILogger<UserService> logger)
+    public UserService(UserManager<Usuario> userManager, ILogger<UserService> logger)
     {
         _userManager = userManager;
         _logger = logger;
@@ -135,7 +135,7 @@ public class UserService : IUserService
         }
     }
 
-    private static UserDto MapToUserDto(User user)
+    private static UserDto MapToUserDto(Usuario user)
     {
         return new UserDto
         {

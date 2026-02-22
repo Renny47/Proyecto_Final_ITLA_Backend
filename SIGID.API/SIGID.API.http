@@ -1,6 +1,14 @@
+# Local
 @SIGID.API_HostAddress = http://localhost:5069
+
+# Producción (cambia la URL por la de tu API desplegada)
+@SIGID.API_Produccion = https://tu-api-en-produccion.com
 
 GET {{SIGID.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
+###
+# Probar en producción: cambia la variable de la línea anterior a {{SIGID.API_Produccion}}
+# GET {{SIGID.API_Produccion}}/weatherforecast/
+# Accept: application/json
 ###

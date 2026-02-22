@@ -31,7 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         b => b.MigrationsAssembly("SIGID.API")));
 
 // Configure Identity
-builder.Services.AddIdentity<User, IdentityRole>(options =>
+builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 6;
     options.Password.RequireDigit = false;
@@ -79,11 +79,24 @@ builder.Services.AddAuthentication(options =>
 
 // Register application services
 builder.Services.AddApplicationServices();
-builder.Services.AddScoped<IBookingService, BookingService>();
+
+// SmartResto Application Services (temporalmente comentados para migración)
+//builder.Services.AddScoped<IReservaService, ReservaService>();
+//builder.Services.AddScoped<IInventarioService, InventarioService>();
+//builder.Services.AddScoped<IPrediccionDemandaService, PrediccionDemandaService>();
+//builder.Services.AddScoped<IAdministradorService, AdministradorService>();
 
 // Infrastructure services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IBookingRepositoryAsync, BookingRepository>();
+
+// SmartResto Infrastructure Repositories (temporalmente comentados para migración)
+//builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
+//builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
+//builder.Services.AddScoped<IPrediccionDemandaRepository, PrediccionDemandaRepository>();
+//builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
+
+// AutoMapper configuration (base)
+builder.Services.AddAutoMapper(typeof(SIGID.Application.Mappings.SmartRestoMappingProfile));
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

@@ -14,24 +14,24 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<User?> GetByIdAsync(string id)
+    public async Task<Usuario?> GetByIdAsync(string id)
     {
         return await _context.Users.FindAsync(id);
     }
 
-    public async Task<User?> GetByUserNameAsync(string userName)
+    public async Task<Usuario?> GetByUserNameAsync(string userName)
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.UserName == userName);
     }
 
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<Usuario?> GetByEmailAsync(string email)
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
+    public async Task<IEnumerable<Usuario>> GetAllAsync()
     {
         return await _context.Users
             .Where(u => u.IsActive)
@@ -39,19 +39,19 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    public async Task<User> CreateAsync(User user)
+    public async Task<Usuario> CreateAsync(Usuario usuario)
     {
-        _context.Users.Add(user);
+        _context.Users.Add(usuario);
         await _context.SaveChangesAsync();
-        return user;
+        return usuario;
     }
 
-    public async Task<User> UpdateAsync(User user)
+    public async Task<Usuario> UpdateAsync(Usuario usuario)
     {
-        user.UpdatedAt = DateTime.UtcNow;
-        _context.Users.Update(user);
+        usuario.UpdatedAt = DateTime.UtcNow;
+        _context.Users.Update(usuario);
         await _context.SaveChangesAsync();
-        return user;
+        return usuario;
     }
 
     public async Task<bool> DeleteAsync(string id)
