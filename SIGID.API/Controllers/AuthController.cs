@@ -109,12 +109,12 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Consultar perfil: con token devuelve el usuario autenticado; sin token devuelve que no hay sesión (sin restricción de acceso).
+    /// Obtener perfil del usuario autenticado. Requiere el token devuelto por POST /api/Auth/login en el header: Authorization: Bearer &lt;token&gt;.
     /// </summary>
     [HttpGet("profile")]
-    [AllowAnonymous]
+    [Authorize]
     [ProducesResponseType(typeof(UserDto), 200)]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(401)]
     public async Task<IActionResult> GetProfile()
     {
         try
@@ -123,26 +123,14 @@ public class AuthController : ControllerBase
 
             if (string.IsNullOrEmpty(userId))
             {
-                return Ok(new
-                {
-                    success = true,
-                    authenticated = false,
-                    message = "No hay sesión activa. Envía el header Authorization: Bearer <token> para ver tu perfil.",
-                    data = (object?)null
-                });
+                return Unauthorized(new { success = false, message = "Token inválido o ausente." });
             }
 
             var user = await _authService.GetUserByIdAsync(userId);
 
             if (user == null)
             {
-                return Ok(new
-                {
-                    success = true,
-                    authenticated = false,
-                    message = "Usuario no encontrado",
-                    data = (object?)null
-                });
+                return NotFound(new { success = false, message = "Usuario no encontrado." });
             }
 
             return Ok(new
@@ -155,11 +143,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener perfil de usuario");
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "Error interno del servidor"
-            });
+            return StatusCode(500, new { success = false, message = "Error interno del servidor" });
         }
     }
 
