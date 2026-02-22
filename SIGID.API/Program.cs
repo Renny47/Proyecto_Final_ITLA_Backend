@@ -221,7 +221,9 @@ else
     app.UseCors("Production");
 }
 
-app.UseHttpsRedirection();
+// No redirigir a HTTPS en producción detrás de proxy (Railway); evita 307 y fallo de healthcheck
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

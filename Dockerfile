@@ -19,9 +19,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# Railway inyecta PORT en runtime; forzar que Kestrel escuche en ese puerto
-ENV ASPNETCORE_URLS=
-EXPOSE 8080
+# Script de arranque: usa PORT de Railway o 8080 por defecto
+COPY --from=build-env /app/SIGID.API/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# Usar PORT en el arranque (solución definitiva para Railway/Heroku)
-ENTRYPOINT ["sh", "-c", "export ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080} && exec dotnet SIGID.API.dll"]
+EXPOSE 8080
+ENTRYPOINT ["/app/entrypoint.sh"]
