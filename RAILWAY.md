@@ -31,6 +31,9 @@ ALLOWED_ORIGINS=https://your-frontend-domain.com,https://another-domain.com
 # ASP.NET Core Configuration
 ASPNETCORE_ENVIRONMENT=Production
 
+# Force migrations on startup
+FORCE_MIGRATIONS=true
+
 # Railway automatically sets PORT variable - don't set manually
 ```
 

@@ -160,21 +160,26 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply migrations in production
-if (!app.Environment.IsDevelopment())
+// Apply migrations ALWAYS (both Development and Production)
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    try
     {
-        try
-        {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            context.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating the database");
-        }
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        logger.LogInformation("🔧 Applying database migrations...");
+        logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
+        logger.LogInformation($"Connection String: {builder.Configuration.GetConnectionString("DefaultConnection")?.Substring(0, 50)}...");
+        
+        await context.Database.MigrateAsync();
+        logger.LogInformation("✅ Database migrations applied successfully!");
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "❌ Error occurred while migrating the database");
+        // Don't throw - let app start anyway
     }
 }
 
