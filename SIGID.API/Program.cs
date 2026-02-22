@@ -109,6 +109,7 @@ builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
 builder.Services.AddScoped<IPrediccionDemandaRepository, PrediccionDemandaRepository>();
 builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
 builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
 
 // AutoMapper configuration (base)
 builder.Services.AddAutoMapper(typeof(SIGID.Application.Mappings.SmartRestoMappingProfile));
