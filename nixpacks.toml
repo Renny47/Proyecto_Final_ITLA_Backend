@@ -1,0 +1,11 @@
+[providers]
+dotnet = "dotnet-8.0"
+
+[phases.build]
+cmds = [
+    "dotnet restore",
+    "dotnet publish SIGID.API/SIGID.API.csproj --configuration Release --output ./published-app --no-restore"
+]
+
+[phases.start]
+cmd = "dotnet published-app/SIGID.API.dll"
