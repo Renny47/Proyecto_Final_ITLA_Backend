@@ -1,22 +1,31 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SIGID.Application.DTOs;
 using SIGID.Application.Interfaces;
+using SIGID.Application.Security;
 using SIGID.Domain.Entities;
 using SIGID.Domain.Exceptions;
+using SIGID.Shared.Configuration;
 
 namespace SIGID.Application.Services;
 
 public class AuthService : IAuthService
 {
     private readonly UserManager<Usuario> _userManager;
+    private readonly IJwtGenerator _jwtGenerator;
+    private readonly JwtSettings _jwtSettings;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         UserManager<Usuario> userManager,
+        IJwtGenerator jwtGenerator,
+        IOptions<JwtSettings> jwtSettings,
         ILogger<AuthService> logger)
     {
         _userManager = userManager;
+        _jwtGenerator = jwtGenerator;
+        _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
         _logger = logger;
     }
 
@@ -50,12 +59,15 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Usuario {UserName} autenticado exitosamente", user.UserName);
 
+            var token = _jwtGenerator.GenerateToken(user);
+            var expiresAt = DateTime.UtcNow.AddHours(_jwtSettings.TokenExpirationHours);
+
             return new LoginResponseDto
             {
                 IsSuccess = true,
                 Message = "Login exitoso",
-                Token = "simple-token", // En arquitectura simple
-                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                Token = token,
+                ExpiresAt = expiresAt,
                 User = MapToUserDto(user)
             };
         }
@@ -114,10 +126,15 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Usuario {UserName} registrado exitosamente", user.UserName);
 
+            var token = _jwtGenerator.GenerateToken(user);
+            var expiresAt = DateTime.UtcNow.AddHours(_jwtSettings.TokenExpirationHours);
+
             return new LoginResponseDto
             {
                 IsSuccess = true,
                 Message = "Usuario registrado exitosamente",
+                Token = token,
+                ExpiresAt = expiresAt,
                 User = MapToUserDto(user)
             };
         }
