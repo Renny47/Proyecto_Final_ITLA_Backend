@@ -14,9 +14,16 @@ JWT_ISSUER=SIGID-API
 JWT_AUDIENCE=SIGID-Client
 JWT_EXPIRATION_HOURS=60
 
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+# Google OAuth (REQUIRED for Google Authentication)
+GoogleAuth__ClientId=169145980043-581aeh1eo6r689u45ck17pesjhkusvuu.apps.googleusercontent.com
+GoogleAuth__ClientSecret=
+GoogleAuth__RedirectUri=https://proyectofinalitlabackend-production.up.railway.app/signin-google
+
+# Note: Set these in Railway Dashboard under Variables tab:
+# - Go to your Railway project dashboard 
+# - Click on Variables tab
+# - Add: GoogleAuth__ClientId = 169145980043-581aeh1eo6r689u45ck17pesjhkusvuu.apps.googleusercontent.com
+# - The double underscore (__) maps to the GoogleAuth:ClientId configuration section
 
 # CORS Configuration (Optional)
 ALLOWED_ORIGINS=https://your-frontend-domain.com,https://another-domain.com
