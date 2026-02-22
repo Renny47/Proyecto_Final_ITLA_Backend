@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SIGID.Domain\SIGID.Domain.csproj" />
-    <ProjectReference Include="..\SIGID.Application\SIGID.Application.csproj" />
+    <ProjectReference Include="..\SIGID.Shared\SIGID.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
