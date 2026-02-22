@@ -34,7 +34,6 @@ public class GoogleAuthService : IGoogleAuthService
         try
         {
             var googleClientId = _configuration["GoogleAuth:ClientId"];
-            _logger.LogInformation("ClientId loaded: {ClientId}", googleClientId);
             
             if (string.IsNullOrEmpty(googleClientId))
             {
