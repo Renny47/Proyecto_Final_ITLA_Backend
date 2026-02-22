@@ -19,9 +19,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# Expose port
+# PORT is set by Railway at runtime; Program.cs uses it via UseUrls
 EXPOSE 8080
-ENV ASPNETCORE_URLS=http://*:8080
 
-# Start the application
+# Start the application (listens on 0.0.0.0:PORT from env)
 ENTRYPOINT ["dotnet", "SIGID.API.dll"]
