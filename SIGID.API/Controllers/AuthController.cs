@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGID.Application.DTOs;
 using SIGID.Application.Interfaces;
+using SIGID.Application.Security;
 
 namespace SIGID.API.Controllers;
 
@@ -11,13 +13,16 @@ namespace SIGID.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IJwtGenerator _jwtGenerator;
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         IAuthService authService,
+        IJwtGenerator jwtGenerator,
         ILogger<AuthController> logger)
     {
         _authService = authService;
+        _jwtGenerator = jwtGenerator;
         _logger = logger;
     }
 
@@ -109,42 +114,28 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Obtener perfil del usuario autenticado. Requiere el token devuelto por POST /api/Auth/login en el header: Authorization: Bearer &lt;token&gt;.
+    /// Obtener perfil del usuario. Pasa el token de login como query: ?token=xxx
     /// </summary>
     [HttpGet("profile")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(UserDto), 200)]
+    [ProducesResponseType(400)]
     [ProducesResponseType(401)]
-    public async Task<IActionResult> GetProfile()
+    public async Task<IActionResult> GetProfile([FromQuery] string? token = null)
     {
-        try
-        {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(token))
+            return BadRequest(new { success = false, message = "Parámetro 'token' es requerido (token del login)." });
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { success = false, message = "Token inválido o ausente." });
-            }
+        var principal = _jwtGenerator.ValidateToken(token);
+        var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized(new { success = false, message = "Token inválido o expirado." });
 
-            var user = await _authService.GetUserByIdAsync(userId);
+        var user = await _authService.GetUserByIdAsync(userId);
+        if (user == null)
+            return NotFound(new { success = false, message = "Usuario no encontrado." });
 
-            if (user == null)
-            {
-                return NotFound(new { success = false, message = "Usuario no encontrado." });
-            }
-
-            return Ok(new
-            {
-                success = true,
-                authenticated = true,
-                data = user
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al obtener perfil de usuario");
-            return StatusCode(500, new { success = false, message = "Error interno del servidor" });
-        }
+        return Ok(new { success = true, data = user });
     }
 
     /// <summary>
