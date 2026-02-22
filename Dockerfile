@@ -19,8 +19,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# PORT is set by Railway at runtime; Program.cs uses it via UseUrls
+# Railway inyecta PORT en runtime; forzar que Kestrel escuche en ese puerto
+ENV ASPNETCORE_URLS=
 EXPOSE 8080
 
-# Start the application (listens on 0.0.0.0:PORT from env)
-ENTRYPOINT ["dotnet", "SIGID.API.dll"]
+# Usar PORT en el arranque (solución definitiva para Railway/Heroku)
+ENTRYPOINT ["sh", "-c", "export ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080} && exec dotnet SIGID.API.dll"]

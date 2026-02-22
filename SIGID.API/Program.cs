@@ -228,6 +228,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Healthcheck mínimo (sin BD ni auth) para Railway
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
 // Welcome endpoint
 app.MapGet("/api", () => new
 {
