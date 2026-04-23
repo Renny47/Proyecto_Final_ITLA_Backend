@@ -17,6 +17,8 @@ public class AppDbContext : IdentityDbContext<Usuario>
     public DbSet<Turno> Turnos { get; set; }
     public DbSet<Inventario> Inventarios { get; set; }
     public DbSet<PrediccionDemanda> PrediccionesDemanda { get; set; }
+    public DbSet<Availability> Availabilities { get; set; }
+    public DbSet<TimeSlot> TimeSlots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -104,6 +106,13 @@ public class AppDbContext : IdentityDbContext<Usuario>
                   .HasForeignKey(r => r.UsuarioId)
                   .OnDelete(DeleteBehavior.Restrict);
 
+            // Relación uno a uno opcional: Reserva -> TimeSlot
+            entity.HasOne(r => r.TimeSlot)
+                  .WithOne(ts => ts.Reserva)
+                  .HasForeignKey<Reserva>(r => r.TimeSlotId)
+                  .OnDelete(DeleteBehavior.SetNull)
+                  .IsRequired(false);
+
             // Índices para consultas frecuentes
             entity.HasIndex(e => e.FechaReserva);
             entity.HasIndex(e => e.Estado);
@@ -182,6 +191,53 @@ public class AppDbContext : IdentityDbContext<Usuario>
             entity.HasIndex(e => e.CreatedAt);
         });
 
+        // Configuraciones para Availability
+        builder.Entity<Availability>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Date).IsRequired();
+            entity.Property(e => e.CreatedBy).HasMaxLength(450).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Relación uno a muchos: Availability -> TimeSlots
+            entity.HasMany(a => a.TimeSlots)
+                  .WithOne(ts => ts.Availability)
+                  .HasForeignKey(ts => ts.AvailabilityId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Índices para consultas frecuentes
+            entity.HasIndex(e => e.Date);
+            entity.HasIndex(e => e.CreatedBy);
+        });
+
+        // Configuraciones para TimeSlot
+        builder.Entity<TimeSlot>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.StartTime).IsRequired();
+            entity.Property(e => e.EndTime).IsRequired();
+            entity.Property(e => e.IsBooked).IsRequired().HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            // Relación muchos a uno: TimeSlot -> Availability
+            entity.HasOne(ts => ts.Availability)
+                  .WithMany(a => a.TimeSlots)
+                  .HasForeignKey(ts => ts.AvailabilityId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Relación uno a uno opcional: TimeSlot -> Reserva
+            entity.HasOne(ts => ts.Reserva)
+                  .WithOne(r => r.TimeSlot)
+                  .HasForeignKey<TimeSlot>(ts => ts.ReservaId)
+                  .OnDelete(DeleteBehavior.SetNull)
+                  .IsRequired(false);
+
+            // Índices para consultas frecuentes
+            entity.HasIndex(e => e.AvailabilityId);
+            entity.HasIndex(e => new { e.AvailabilityId, e.StartTime, e.EndTime });
+            entity.HasIndex(e => e.IsBooked);
+        });
+
         // Configurar nombres de tablas para mantener consistencia
         builder.Entity<Usuario>().ToTable("Usuarios");
         builder.Entity<Empleado>().ToTable("Empleados");
@@ -190,5 +246,7 @@ public class AppDbContext : IdentityDbContext<Usuario>
         builder.Entity<Turno>().ToTable("Turnos");
         builder.Entity<Inventario>().ToTable("Inventarios");
         builder.Entity<PrediccionDemanda>().ToTable("PrediccionesDemanda");
+        builder.Entity<Availability>().ToTable("Availabilities");
+        builder.Entity<TimeSlot>().ToTable("TimeSlots");
     }
 }

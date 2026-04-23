@@ -13,9 +13,11 @@ public class Reserva
     public string? Comentarios { get; set; }
     public string? NumeroMesa { get; set; }
     public decimal? MontoEstimado { get; set; }
+    public Guid? TimeSlotId { get; set; } // Foreign Key to TimeSlot (nullable for backward compatibility)
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     
     // Navigation Properties
     public Usuario Usuario { get; set; } = null!;
+    public TimeSlot? TimeSlot { get; set; }
 }

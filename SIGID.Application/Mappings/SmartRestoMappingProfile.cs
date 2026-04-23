@@ -122,5 +122,32 @@ public class SmartRestoMappingProfile : Profile
             .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
             .ForMember(dest => dest.FechaAsignacion, opt => opt.Ignore())
             .ForMember(dest => dest.Usuario, opt => opt.Ignore());
+
+        // Availability mappings
+        CreateMap<Availability, AvailabilityDto>()
+            .ForMember(dest => dest.TimeSlots, opt => opt.MapFrom(src => src.TimeSlots));
+        
+        CreateMap<CreateAvailabilityDto, Availability>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.TimeSlots, opt => opt.Ignore());
+
+        // TimeSlot mappings
+        CreateMap<TimeSlot, TimeSlotDto>()
+            .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime.ToString(@"hh\:mm")))
+            .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime.ToString(@"hh\:mm")));
+        
+        CreateMap<CreateTimeSlotDto, TimeSlot>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.AvailabilityId, opt => opt.Ignore())
+            .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => TimeSpan.Parse(src.StartTime)))
+            .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => TimeSpan.Parse(src.EndTime)))
+            .ForMember(dest => dest.IsBooked, opt => opt.Ignore())
+            .ForMember(dest => dest.ReservaId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.Availability, opt => opt.Ignore())
+            .ForMember(dest => dest.Reserva, opt => opt.Ignore());
     }
 }
