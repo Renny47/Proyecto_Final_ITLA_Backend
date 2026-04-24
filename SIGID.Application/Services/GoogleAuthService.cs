@@ -78,6 +78,8 @@ public class GoogleAuthService : IGoogleAuthService
             
             if (user == null)
             {
+                _logger.LogInformation("Creando nuevo usuario desde Google OAuth: {Email}", payload.Email);
+                
                 // Crear nuevo usuario
                 user = new Usuario
                 {
@@ -88,10 +90,13 @@ public class GoogleAuthService : IGoogleAuthService
                     LastName = payload.FamilyName ?? "",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow,
-                    LastLoginAt = DateTime.UtcNow
+                    LastLoginAt = DateTime.UtcNow,
+                    TipoUsuario = Domain.Enums.TipoUsuario.Cliente
                 };
 
-                var createResult = await _userManager.CreateAsync(user);
+                // Crear usuario con contraseña aleatoria (no se usará, solo para cumplir con Identity)
+                var randomPassword = GenerateRandomPassword();
+                var createResult = await _userManager.CreateAsync(user, randomPassword);
                 
                 if (!createResult.Succeeded)
                 {
@@ -101,17 +106,24 @@ public class GoogleAuthService : IGoogleAuthService
                     return new LoginResponseDto 
                     { 
                         IsSuccess = false, 
-                        Message = "Error al crear usuario con Google OAuth" 
+                        Message = $"Error al crear usuario: {string.Join(", ", createResult.Errors.Select(e => e.Description))}" 
                     };
                 }
 
                 // Asignar rol por defecto "Cliente" a usuarios de Google OAuth
-                await _userManager.AddToRoleAsync(user, "Cliente");
+                var roleResult = await _userManager.AddToRoleAsync(user, "Cliente");
+                if (!roleResult.Succeeded)
+                {
+                    _logger.LogWarning("No se pudo asignar rol Cliente a usuario {Email}: {Errors}", 
+                        payload.Email, string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                }
 
-                _logger.LogInformation("Usuario creado exitosamente desde Google OAuth: {Email}", payload.Email);
+                _logger.LogInformation("Usuario creado exitosamente desde Google OAuth: {Email} con ID: {UserId}", payload.Email, user.Id);
             }
             else
             {
+                _logger.LogInformation("Usuario existente encontrado, actualizando login: {Email}", payload.Email);
+                
                 // Actualizar información del usuario existente
                 user.LastLoginAt = DateTime.UtcNow;
                 user.UpdatedAt = DateTime.UtcNow;
@@ -121,8 +133,16 @@ public class GoogleAuthService : IGoogleAuthService
                     user.EmailConfirmed = true;
                 }
 
-                await _userManager.UpdateAsync(user);
-                _logger.LogInformation("Usuario autenticado exitosamente con Google OAuth: {Email}", payload.Email);
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    _logger.LogWarning("No se pudo actualizar usuario {Email}: {Errors}", 
+                        payload.Email, string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+                }
+                else
+                {
+                    _logger.LogInformation("Usuario actualizado exitosamente: {Email}", payload.Email);
+                }
             }
 
             // Generar JWT token
@@ -172,5 +192,17 @@ public class GoogleAuthService : IGoogleAuthService
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt
         };
+    }
+
+    private static string GenerateRandomPassword()
+    {
+        // Generar contraseña aleatoria segura para usuarios de Google OAuth
+        // Esta contraseña no se usará nunca, solo cumple con los requisitos de Identity
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        var random = new Random();
+        var password = new string(Enumerable.Repeat(chars, 16)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+        
+        return password + "A1!"; // Asegurar que cumple con todos los requisitos
     }
 }
