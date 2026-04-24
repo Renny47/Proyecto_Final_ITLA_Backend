@@ -80,10 +80,12 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "email": "usuario@example.com",
+  "userName": "usuario@example.com",  // Puede ser email o username
   "password": "Password123!"
 }
 ```
+
+**Nota**: El campo `userName` acepta tanto email como nombre de usuario.
 
 **Respuesta exitosa**:
 ```json

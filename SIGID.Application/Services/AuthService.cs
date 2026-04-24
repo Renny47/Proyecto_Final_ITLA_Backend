@@ -33,7 +33,10 @@ public class AuthService : IAuthService
     {
         try
         {
-            var user = await _userManager.FindByNameAsync(loginRequest.UserName);
+            // Buscar usuario por email o username
+            var user = await _userManager.FindByEmailAsync(loginRequest.UserName) 
+                      ?? await _userManager.FindByNameAsync(loginRequest.UserName);
+            
             if (user == null)
             {
                 return new LoginResponseDto
@@ -55,7 +58,13 @@ public class AuthService : IAuthService
 
             // Actualizar último login
             user.LastLoginAt = DateTime.UtcNow;
-            await _userManager.UpdateAsync(user);
+            user.UpdatedAt = DateTime.UtcNow;
+            var updateResult = await _userManager.UpdateAsync(user);
+            
+            if (!updateResult.Succeeded)
+            {
+                _logger.LogWarning("No se pudo actualizar LastLoginAt para usuario {UserName}", user.UserName);
+            }
 
             _logger.LogInformation("Usuario {UserName} autenticado exitosamente", user.UserName);
 
