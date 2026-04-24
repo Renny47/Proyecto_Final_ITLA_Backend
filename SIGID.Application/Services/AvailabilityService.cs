@@ -244,4 +244,9 @@ public class AvailabilityService : IAvailabilityService
             }
         }
     }
+    public async Task<IEnumerable<AvailabilityDto>> GetAllAsync()
+    {
+        var availabilities = await _availabilityRepository.GetAllAsync();
+        return _mapper.Map<IEnumerable<AvailabilityDto>>(availabilities);
+    }
 }

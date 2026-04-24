@@ -159,6 +159,20 @@ public class AvailabilityController : ControllerBase
             return StatusCode(500, "Error interno del servidor");
         }
     }
+    [HttpGet("all")]
+    public async Task<ActionResult<IEnumerable<AvailabilityDto>>> GetAllAvailability()
+    {
+        try
+        {
+            var availability = await _availabilityService.GetAllAsync();
+            return Ok(availability);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener todas las disponibilidades");
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
 }
 
 [ApiController]

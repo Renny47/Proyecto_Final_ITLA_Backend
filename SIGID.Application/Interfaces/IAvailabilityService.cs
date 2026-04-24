@@ -13,4 +13,5 @@ public interface IAvailabilityService
     Task<bool> BookTimeSlotAsync(Guid timeSlotId, Guid reservaId);
     Task<bool> UnbookTimeSlotAsync(Guid timeSlotId);
     Task<bool> ValidateTimeSlotAvailableAsync(Guid timeSlotId);
+    Task<IEnumerable<AvailabilityDto>> GetAllAsync();
 }

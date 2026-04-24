@@ -47,6 +47,7 @@ public class AvailabilityRepository : IAvailabilityRepository
     {
         return await _context.Availabilities
             .Include(a => a.TimeSlots)
+            .Where(a => a.Date >= DateTime.Today)
             .OrderBy(a => a.Date)
             .ToListAsync();
     }
