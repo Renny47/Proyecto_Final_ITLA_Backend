@@ -18,4 +18,5 @@ public interface IInventarioService
     Task<InventarioDto> UpdateStockAsync(Guid id, UpdateStockDto updateStockDto);
     Task<IEnumerable<StockAlertDto>> GetAlertasStockAsync();
     Task<NivelStock> CalcularNivelStockAsync(int cantidadActual, int cantidadMinima, int cantidadMaxima);
+    Task<IEnumerable<object>> GetHistorialPrediccionAsync(Guid id);
 }

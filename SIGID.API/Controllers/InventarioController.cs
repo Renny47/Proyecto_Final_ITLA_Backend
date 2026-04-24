@@ -244,4 +244,29 @@ public class InventarioController : ControllerBase
             return StatusCode(500, "Error interno del servidor");
         }
     }
+
+    /// <summary>
+    /// Obtiene el historial mensual de ventas/movimientos de un producto para la predicción de IA
+    /// </summary>
+    [HttpGet("{id}/historial-prediccion")]
+    public async Task<ActionResult<IEnumerable<object>>> GetHistorialParaPrediccion(Guid id)
+    {
+        try
+        {
+
+            var historial = await _inventarioService.GetHistorialPrediccionAsync(id);
+
+            if (historial == null || !historial.Any())
+            {
+                return Ok(new List<object>());
+            }
+
+            return Ok(historial);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener historial de predicción para el item {Id}", id);
+            return StatusCode(500, "Error interno del servidor");
+        }
+    }
 }

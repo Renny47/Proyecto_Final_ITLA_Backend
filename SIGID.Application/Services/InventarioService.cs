@@ -195,4 +195,34 @@ public class InventarioService : IInventarioService
 
         return NivelStock.Normal;
     }
+
+    public async Task<IEnumerable<object>> GetHistorialPrediccionAsync(Guid id)
+    {
+        var inventario = await _inventarioRepository.GetByIdAsync(id);
+        if (inventario == null)
+        {
+            throw new ArgumentException("El producto de inventario no existe.");
+        }
+
+        var historialSimulado = new List<object>();
+        var random = new Random(id.GetHashCode());
+
+        int cantidadBase = inventario.CantidadActual <= 0 ? 50 : inventario.CantidadActual;
+
+        for (int i = 12; i >= 1; i--)
+        {
+            var fechaHistorica = DateTime.Today.AddMonths(-i);
+
+            var variacion = random.Next((int)(-cantidadBase * 0.3), (int)(cantidadBase * 0.3));
+            var cantidadCalculada = Math.Max(0, cantidadBase + variacion);
+
+            historialSimulado.Add(new
+            {
+                fecha = $"{fechaHistorica.Year}-{fechaHistorica.Month:D2}-01",
+                cantidad = cantidadCalculada
+            });
+        }
+
+        return historialSimulado;
+    }
 }
