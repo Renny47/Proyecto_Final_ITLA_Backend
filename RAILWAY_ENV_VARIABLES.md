@@ -4,11 +4,23 @@ Para desplegar correctamente en Railway, configura estas variables de entorno en
 
 ## 🔧 Variables Requeridas para Railway
 
-### Base de Datos
+# Railway Environment Variables Configuration
+
+Para desplegar correctamente en Railway, configura estas variables de entorno en tu proyecto:
+
+## 🔧 Variables Requeridas para Railway
+
+### ✅ Base de Datos (CONFIGURADA - SQL Server Externo)
 ```bash
-# Railway automáticamente proporciona DATABASE_URL cuando añades un servicio PostgreSQL
-# No necesitas configurar esta manualmente si usas Railway PostgreSQL
-DATABASE_URL=postgresql://usuario:contraseña@host:puerto/database
+# ⚠️ BASE DE DATOS EXTERNA CONFIGURADA
+# Ya no necesitas configurar DATABASE_URL en Railway
+# El sistema usa SQL Server externo configurado en appsettings.json
+
+# Información de conexión (ya configurada en código):
+# Servidor: sql5106.site4now.net
+# Base de Datos: db_ac569b_rbaezaspnet
+# Usuario: db_ac569b_rbaezaspnet_admin
+# ✅ La aplicación se conecta automáticamente
 ```
 
 ### JWT Configuration
