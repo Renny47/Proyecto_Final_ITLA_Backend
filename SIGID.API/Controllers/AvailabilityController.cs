@@ -30,7 +30,7 @@ public class AvailabilityController : ControllerBase
     /// <param name="createAvailabilityDto">Datos de la disponibilidad a crear</param>
     /// <returns>Disponibilidad creada</returns>
     [HttpPost]
-    [Authorize(Roles = "Administrador")] // Solo admins pueden crear disponibilidad
+    //[Authorize(Roles = "Administrador")] // Solo admins pueden crear disponibilidad
     public async Task<ActionResult<AvailabilityDto>> CreateAvailability([FromBody] CreateAvailabilityDto createAvailabilityDto)
     {
         try
@@ -106,7 +106,7 @@ public class AvailabilityController : ControllerBase
     /// <param name="updateAvailabilityDto">Nuevos datos de disponibilidad</param>
     /// <returns>Disponibilidad actualizada</returns>
     [HttpPatch("{id}")]
-    [Authorize(Roles = "Administrador")] // Solo admins pueden actualizar
+    //[Authorize(Roles = "Administrador")] // Solo admins pueden actualizar
     public async Task<ActionResult<AvailabilityDto>> UpdateAvailability(Guid id, [FromBody] UpdateAvailabilityDto updateAvailabilityDto)
     {
         try
@@ -138,7 +138,7 @@ public class AvailabilityController : ControllerBase
     /// <param name="id">ID de la disponibilidad a eliminar</param>
     /// <returns>Resultado de la operación</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Administrador")] // Solo admins pueden eliminar
+    //[Authorize(Roles = "Administrador")] // Solo admins pueden eliminar
     public async Task<ActionResult> DeleteAvailability(Guid id)
     {
         try
